@@ -1,0 +1,7 @@
+com\cts\ecom\customer\model\Customer.class
+com\cts\ecom\customer\resource\CustomerResource.class
+com\cts\ecom\customer\service\CustomerRegistrationSource.class
+com\cts\ecom\customer\App.class
+com\cts\ecom\customer\service\CustomerServiceImpl.class
+com\cts\ecom\customer\repository\CustomerRepository.class
+com\cts\ecom\customer\service\CustomerService.class
