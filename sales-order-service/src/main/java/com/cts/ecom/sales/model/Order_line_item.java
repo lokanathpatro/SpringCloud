@@ -15,6 +15,11 @@ public class Order_line_item {
 	private int item_quantity;
 	private Long order_id;
 	
+	@Override
+	public String toString() {
+		return String.format("Order line item{Order_line_item_id=%d, item_name='%s', item quantity=%d order_id=%d}", id,item_name,item_quantity,order_id); 
+	}
+	
 	public Long getId() {
 		return id;
 	}

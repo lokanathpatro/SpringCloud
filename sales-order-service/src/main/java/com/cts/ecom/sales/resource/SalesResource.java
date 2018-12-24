@@ -41,6 +41,7 @@ import com.cts.ecom.sales.repo.OrderLineItemRepository;
 import com.cts.ecom.sales.repo.SalesOrderRepository;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 @RestController
 public class SalesResource {
@@ -53,49 +54,31 @@ public class SalesResource {
 	@Autowired
 	OrderLineItemRepository orderLineItemRepository;
 
-	private Logger logger = LoggerFactory.getLogger(getClass());
-	private EurekaClient discoveryClient1;
 	private RestTemplate restTemplate;
 	private LoadBalancerClient loadBalancer;
 
 	@Autowired
 	public SalesResource(LoadBalancerClient loadBalancer) {
-		//this.discoveryClient1 = discoveryClient1;
+		//this.discoveryClient = discoveryClient;
 		this.loadBalancer = loadBalancer;
 		this.restTemplate = new RestTemplate();
 	}
 
 	@PostMapping("/sales")
+	@HystrixCommand(fallbackMethod = "getDataFallBack")
 	public String createItem(@RequestBody SalesRequest req) throws RestClientException, IOException {
 		Sales_order sales_order=null;
+		System.out.println("sales service call happened.");
 		Customer_SOS customer = customerSosRepository.findOne(req.getCustomer_id());
 		if(customer!=null) {
-
-			//ResponseEntity<ItemList> res=null;
-			
-			/*@Autowired
-			private LoadBalancerClient loadBalancer;
-			
-			public void getEmployee() throws RestClientException, IOException {
-				
-				ServiceInstance serviceInstance=loadBalancer.choose("employee-producer");
-				
-				System.out.println(serviceInstance.getUri());
-				
-				String baseUrl=serviceInstance.getUri().toString()*/;
-
 			List<String> itemNames=req.getItemNames();
-			/*res=restTemplate.exchange("http://localhost:8084/items",
-					HttpMethod.GET, getHeaders(),ItemList.class);*/
+			System.out.println("before call loadbalancer");
 			ServiceInstance instance = loadBalancer.choose("475947-item-service");
-			//InstanceInfo instance = discoveryClient1.getNextServerFromEureka("475947-item-service", false);
-			//List<ServiceInstance> instances=discoveryClient.getInstances("item-service");
-			//ServiceInstance serviceInstance=instances.get(0);
 			String baseUrl=instance.getUri().toString();
-
+			System.out.println("baseUrl "+baseUrl);
 			ItemList itemList =restTemplate.getForObject( baseUrl+"/itemList", ItemList.class);
 			Long totalprice=0l;
-			int itemQuantity=0;
+			int itemQuantity=1;
 			String itemsDesc="";
 			String AllItemNames="";
 
@@ -124,17 +107,30 @@ public class SalesResource {
 				orderLineItem.setItem_name(AllItemNames);
 				orderLineItem.setItem_quantity(itemQuantity);
 				orderLineItem.setOrder_id(sales_order.getId());
-
-				return "sucessfully ordered";}
+				String response="sucessfully ordered.  "+"\n"+"order Line Item details:"+
+						orderLineItem.toString()+
+						"sales order details:"+sales_order.toString();
+				return response;}
 
 			else {
-				return "Item is not available. So your order declined Please do again";}
+				return "Item is not available. So your order is declined Please do again";}
 
 		}
 
 		return "Cutomer Id is not available. so Order did not happen.";
 	}
+	public String getDataFallBack(SalesRequest salesReq) {
 
+		/*ItemList itemList = new ItemList();
+		Item item = new Item();
+		item.setId(0l);
+		item.setName("fallBackNm");
+		item.setDescription("fallback description");
+		item.setPrice(0l);
+		itemList.getItems().add(item);*/
+		return "service is down. Please try after some time. thank you for your patiences";
+
+	}
 	@GetMapping("/customersos/{id}")
 	public Customer_SOS retrieveStudent(@PathVariable long id) {
 		return customerSosRepository.findOne(id);

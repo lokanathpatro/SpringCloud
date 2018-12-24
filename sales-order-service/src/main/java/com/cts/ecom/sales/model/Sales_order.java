@@ -15,6 +15,11 @@ public class Sales_order {
 	String order_desc;
 	Long total_price;
 	
+	@Override
+	public String toString() {
+		return String.format("Sales order{Order_id=%d, order_date='%s',cust_id=%d ,order_description='%s',total_price=%d}", id,order_date,cust_id,order_desc,total_price); 
+	}
+	
 	public Long getId() {
 		return id;
 	}
