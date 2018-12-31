@@ -1,3 +1,4 @@
+com\cts\ecom\customer\model\Customer.class
 com\cts\ecom\sales\model\Item.class
 com\cts\ecom\sales\model\ItemList.class
 com\cts\ecom\sales\repo\SalesOrderRepository.class

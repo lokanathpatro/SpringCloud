@@ -43,7 +43,7 @@ public class CustomerResource {
 	@PostMapping("/customers")
 	public ResponseEntity<Object> createCustomer(@RequestBody Customer customer) {
 		Customer savedCustomer = customerService.createCustomer(customer);
-
+		
 		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
 				.buildAndExpand(savedCustomer.getId()).toUri();
 		customerRegistrationSource.customerRegistration().send(MessageBuilder.withPayload(customer).build());

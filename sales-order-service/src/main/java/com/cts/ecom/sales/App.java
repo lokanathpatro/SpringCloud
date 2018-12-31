@@ -14,11 +14,13 @@ import org.springframework.cloud.stream.annotation.Input;
 import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.cloud.stream.messaging.Sink;
 
+import com.cts.ecom.customer.model.Customer;
 import com.cts.ecom.sales.model.Customer_SOS;
 import com.cts.ecom.sales.repo.CustomerSosRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 @EnableBinding(Sink.class)
 @SpringBootApplication
@@ -35,31 +37,14 @@ private static final Logger LOG = LoggerFactory.getLogger(App.class);
 	CustomerSosRepository customerSosRepository;
 
 	@StreamListener(Sink.INPUT)
-	public void processRegisterEmployees(String customer) {
-		System.out.println("Customer Registered to Customer SOS Table " + customer);
-		
-		ObjectMapper mapper = new ObjectMapper();
+	public void processRegisterEmployees(Customer customer)  {
+		System.out.println("Customer Registered to Customer SOS Table " + customer.toString());
 		LOG.info("before try");
-		
-		try {
-			System.out.println();
-			JsonNode customerObj = mapper.readTree(customer);
-			System.out.println("first name"+customerObj.get("first_name").asText());
-			
 			Customer_SOS customerSOS = new Customer_SOS();
-			customerSOS.setCust_id(customerObj.get("id").asLong());
-			customerSOS.setCust_first_name(customerObj.get("first_name").asText());
-			customerSOS.setCust_last_name(customerObj.get("last_name").asText());
-			customerSOS.setCust_email(customerObj.get("email").asText());
+			customerSOS.setCust_id(customer.getId());
+			customerSOS.setCust_email(customer.getEmail());
+			customerSOS.setCust_first_name(customer.getFirst_name());
+			customerSOS.setCust_last_name(customer.getLast_name());
 			customerSosRepository.save(customerSOS);
-			
-		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		//customeSOS=customerSosRepository.save(customer);
 	}
 }

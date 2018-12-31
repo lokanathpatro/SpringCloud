@@ -72,18 +72,18 @@ public class SalesResource {
 		Customer_SOS customer = customerSosRepository.findOne(req.getCustomer_id());
 		if(customer!=null) {
 			List<String> itemNames=req.getItemNames();
-			System.out.println("before call loadbalancer");
+			System.out.println("before call loadbalancer "+req.getCustomer_id());
 			ServiceInstance instance = loadBalancer.choose("475947-item-service");
 			String baseUrl=instance.getUri().toString();
 			System.out.println("baseUrl "+baseUrl);
 			ItemList itemList =restTemplate.getForObject( baseUrl+"/itemList", ItemList.class);
+			System.out.println("itemList "+itemList.getItems().get(0).getName());
 			Long totalprice=0l;
-			int itemQuantity=1;
+			int itemQuantity=0;
 			String itemsDesc="";
 			String AllItemNames="";
 
 			for (String itemName : itemNames) {
-
 				for (Item item : itemList.getItems()) {
 					if(item.getName().equals(itemName)) {
 						totalprice=totalprice+item.getPrice();
@@ -100,17 +100,24 @@ public class SalesResource {
 				sales_order.setOrder_desc(itemsDesc);
 				sales_order.setId((long)Math.random());
 
-				System.out.println(sales_order.toString());
+				System.out.println("sales order"+sales_order.toString());
 				salesOrderRepository.save(sales_order);
-
+				System.out.println("order saved");
 				Order_line_item orderLineItem = new Order_line_item();
 				orderLineItem.setItem_name(AllItemNames);
 				orderLineItem.setItem_quantity(itemQuantity);
 				orderLineItem.setOrder_id(sales_order.getId());
-				String response="sucessfully ordered.  "+"\n"+"order Line Item details:"+
-						orderLineItem.toString()+
-						"sales order details:"+sales_order.toString();
-				return response;}
+				System.out.println("order line item saved");
+				/*String response="sucessfully ordered.  "+"\n"+"order Line Item details:"+"\n"+
+						"your order line item ID: "+orderLineItem.getId().toString()+"\n"
+						+"item name you ordered: "+orderLineItem.getItem_name()+"\n"
+						+orderLineItem.getItem_quantity()
+						+"\n"+"\n"+"************************"+"\n"+"\n"+
+						"sales order details:"+"\n"+"id of your order-"+sales_order.getId().toString()+"\n"
+						+"sales order description:"+sales_order.getOrder_desc()+"\n"
+						+sales_order.getOrder_date()+sales_order.getTotal_price().toString();
+				System.out.println("response "+response);
+				*/return "order is placed";}
 
 			else {
 				return "Item is not available. So your order is declined Please do again";}
